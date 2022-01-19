@@ -64,6 +64,7 @@ AUTHORIZED_EXTS = [".png"]
 DEFAULT_KLIPPY_LOG_PATH = "/tmp/klippy.log"
 ALL_TRANSPORTS = ["http", "websocket", "mqtt", "internal"]
 
+
 class MutableRouter(tornado.web.ReversibleRuleRouter):
     def __init__(self, application: MoonrakerApp) -> None:
         self.application = application
@@ -104,6 +105,7 @@ class MutableRouter(tornado.web.ReversibleRuleRouter):
             except Exception:
                 logging.exception(f"Unable to remove rule: {pattern}")
 
+
 class APIDefinition:
     def __init__(self,
                  endpoint: str,
@@ -122,6 +124,7 @@ class APIDefinition:
         self.supported_transports = transports
         self.callback = callback
         self.need_object_parser = need_object_parser
+
 
 class InternalTransport(APITransport):
     def __init__(self, server: Server) -> None:
@@ -158,6 +161,7 @@ class InternalTransport(APITransport):
         # or via keyword arugments
         args = request_arguments or kwargs
         return await func(WebRequest(ep, args, action))
+
 
 class MoonrakerApp:
     def __init__(self, config: ConfigHelper) -> None:
@@ -410,6 +414,7 @@ class MoonrakerApp:
         self.api_cache[endpoint] = api_def
         return api_def
 
+
 class AuthorizedRequestHandler(tornado.web.RequestHandler):
     def initialize(self) -> None:
         self.server: Server = self.settings['server']
@@ -462,6 +467,8 @@ class AuthorizedRequestHandler(tornado.web.RequestHandler):
 
 # Due to the way Python treats multiple inheritance its best
 # to create a separate authorized handler for serving files
+
+
 class AuthorizedFileHandler(tornado.web.StaticFileHandler):
     def initialize(self,
                    path: str,
@@ -507,6 +514,7 @@ class AuthorizedFileHandler(tornado.web.StaticFileHandler):
         if ext in AUTHORIZED_EXTS:
             return False
         return True
+
 
 class DynamicRequestHandler(AuthorizedRequestHandler):
     def initialize(
@@ -643,6 +651,7 @@ class DynamicRequestHandler(AuthorizedRequestHandler):
             self.set_status(204)
         self._log_debug(f"HTTP Response::{req}", result)
         self.finish(result)
+
 
 class FileRequestHandler(AuthorizedFileHandler):
     def set_extra_headers(self, path: str) -> None:
@@ -798,6 +807,7 @@ class FileRequestHandler(AuthorizedFileHandler):
     def _get_cached_version(cls, abs_path: str) -> Optional[str]:
         return None
 
+
 @tornado.web.stream_request_body
 class FileUploadHandler(AuthorizedRequestHandler):
     def initialize(self,
@@ -816,6 +826,7 @@ class FileUploadHandler(AuthorizedRequestHandler):
             assert isinstance(self.request.connection, HTTP1Connection)
             self.request.connection.set_max_body_size(self.max_upload_size)
             tmpname = self.file_manager.gen_temp_upload_path()
+            print(tmpname)
             self._targets = {
                 'root': ValueTarget(),
                 'print': ValueTarget(),
@@ -888,6 +899,8 @@ class FileUploadHandler(AuthorizedRequestHandler):
         self.finish(result)
 
 # Default Handler for unregistered endpoints
+
+
 class AuthorizedErrorHandler(AuthorizedRequestHandler):
     def prepare(self) -> None:
         super(AuthorizedRequestHandler, self).prepare()
@@ -903,6 +916,7 @@ class AuthorizedErrorHandler(AuthorizedRequestHandler):
             err['traceback'] = "\n".join(
                 traceback.format_exception(*kwargs['exc_info']))
         self.finish({'error': err})
+
 
 class RedirectHandler(AuthorizedRequestHandler):
     def get(self, *args, **kwargs) -> None:

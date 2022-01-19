@@ -826,7 +826,7 @@ class FileUploadHandler(AuthorizedRequestHandler):
             assert isinstance(self.request.connection, HTTP1Connection)
             self.request.connection.set_max_body_size(self.max_upload_size)
             tmpname = self.file_manager.gen_temp_upload_path()
-            print(tmpname)
+            logging.info(f"临时文件名：{tmpname}")
             self._targets = {
                 'root': ValueTarget(),
                 'print': ValueTarget(),
